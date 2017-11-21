@@ -53,15 +53,10 @@ server.listen(0, common.mustCall(() => {
     {
       const req = client.request();
       req.resume();
-      // TODO(jasnell): Still investigating precisely why, but on Windows,
-      //                the error is not emitted because the underlying
-      //                mechanism ensures that only one request is sent
-      //                at a time per the maxConcurrentStreams setting.
-      //                This likely has to do with the way the response
-      //                is being handled on the server side. This is safe
-      //                to ignore on Windows because of the assert.strictEqual
-      //                check in the on('stream') handler which ensures that
-      //                only one request is being handled at any given time.
+      // TODO(jasnell): On Windows, the error is not emitted because the
+      // underlying mechanism ensures that only one request is sent at a time
+      // per the maxConcurrentStreams setting. Need to investigate why the
+      // same is not happening on posix systems.
       if (!common.isWindows) {
         req.on('error', common.expectsError({
           code: 'ERR_HTTP2_STREAM_ERROR',
