@@ -813,8 +813,7 @@ static void ReadDir(const FunctionCallbackInfo<Value>& args) {
 
   const int argc = args.Length();
 
-  if (argc < 1)
-    return TYPE_ERROR("path required");
+  CHECK_GE(args.Length(), 1);
 
   BufferValue path(env->isolate(), args[0]);
   ASSERT_PATH(path)
