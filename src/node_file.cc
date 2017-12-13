@@ -573,11 +573,7 @@ static void FStat(const FunctionCallbackInfo<Value>& args) {
 static void Symlink(const FunctionCallbackInfo<Value>& args) {
   Environment* env = Environment::GetCurrent(args);
 
-  int len = args.Length();
-  if (len < 1)
-    return TYPE_ERROR("target path required");
-  if (len < 2)
-    return TYPE_ERROR("src path required");
+  CHECK_GE(args.Length(), 2);
 
   BufferValue target(env->isolate(), args[0]);
   ASSERT_PATH(target)
