@@ -906,12 +906,8 @@ static void Open(const FunctionCallbackInfo<Value>& args) {
 static void CopyFile(const FunctionCallbackInfo<Value>& args) {
   Environment* env = Environment::GetCurrent(args);
 
-  if (!args[0]->IsString())
-    return TYPE_ERROR("src must be a string");
-  if (!args[1]->IsString())
-    return TYPE_ERROR("dest must be a string");
-  if (!args[2]->IsInt32())
-    return TYPE_ERROR("flags must be an int");
+  CHECK_GE(args.Length(), 3);
+  CHECK(args[2]->IsInt32());
 
   BufferValue src(env->isolate(), args[0]);
   ASSERT_PATH(src)
