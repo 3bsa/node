@@ -764,10 +764,8 @@ static void RMDir(const FunctionCallbackInfo<Value>& args) {
 static void MKDir(const FunctionCallbackInfo<Value>& args) {
   Environment* env = Environment::GetCurrent(args);
 
-  if (args.Length() < 2)
-    return TYPE_ERROR("path and mode are required");
-  if (!args[1]->IsInt32())
-    return TYPE_ERROR("mode must be an integer");
+  CHECK_GE(args.Length(), 2);
+  CHECK(args[1]->IsInt32());
 
   BufferValue path(env->isolate(), args[0]);
   ASSERT_PATH(path)
