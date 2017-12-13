@@ -666,11 +666,7 @@ static void ReadLink(const FunctionCallbackInfo<Value>& args) {
 static void Rename(const FunctionCallbackInfo<Value>& args) {
   Environment* env = Environment::GetCurrent(args);
 
-  int len = args.Length();
-  if (len < 1)
-    return TYPE_ERROR("old path required");
-  if (len < 2)
-    return TYPE_ERROR("new path required");
+  CHECK_GE(args.Length(), 2);
 
   BufferValue old_path(env->isolate(), args[0]);
   ASSERT_PATH(old_path)
