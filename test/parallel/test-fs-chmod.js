@@ -183,6 +183,23 @@ if (fs.lchmod) {
   );
 });
 
+[false, 1, {}, [], null, undefined].forEach((i) => {
+  common.expectsError(
+    () => fs.chmod(i, 1, common.mustNotCall()),
+    {
+      code: 'ERR_INVALID_ARG_TYPE',
+      type: TypeError
+    }
+  );
+  common.expectsError(
+    () => fs.chmodSync(i, 1),
+    {
+      code: 'ERR_INVALID_ARG_TYPE',
+      type: TypeError
+    }
+  );
+});
+
 process.on('exit', function() {
   assert.strictEqual(0, openCount);
 });
