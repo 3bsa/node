@@ -1194,16 +1194,9 @@ static void Chown(const FunctionCallbackInfo<Value>& args) {
   Environment* env = Environment::GetCurrent(args);
 
   int len = args.Length();
-  if (len < 1)
-    return TYPE_ERROR("path required");
-  if (len < 2)
-    return TYPE_ERROR("uid required");
-  if (len < 3)
-    return TYPE_ERROR("gid required");
-  if (!args[1]->IsUint32())
-    return TYPE_ERROR("uid must be an unsigned int");
-  if (!args[2]->IsUint32())
-    return TYPE_ERROR("gid must be an unsigned int");
+  CHECK_GE(len, 3);
+  CHECK(args[1]->IsUint32());
+  CHECK(args[2]->IsUint32());
 
   BufferValue path(env->isolate(), args[0]);
   ASSERT_PATH(path)
