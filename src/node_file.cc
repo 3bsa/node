@@ -876,17 +876,9 @@ static void ReadDir(const FunctionCallbackInfo<Value>& args) {
 static void Open(const FunctionCallbackInfo<Value>& args) {
   Environment* env = Environment::GetCurrent(args);
 
-  int len = args.Length();
-  if (len < 1)
-    return TYPE_ERROR("path required");
-  if (len < 2)
-    return TYPE_ERROR("flags required");
-  if (len < 3)
-    return TYPE_ERROR("mode required");
-  if (!args[1]->IsInt32())
-    return TYPE_ERROR("flags must be an int");
-  if (!args[2]->IsInt32())
-    return TYPE_ERROR("mode must be an int");
+  CHECK_GE(args.Length(), 3);
+  CHECK(args[1]->IsInt32());
+  CHECK(args[2]->IsInt32());
 
   BufferValue path(env->isolate(), args[0]);
   ASSERT_PATH(path)
