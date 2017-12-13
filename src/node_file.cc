@@ -748,8 +748,7 @@ static void Unlink(const FunctionCallbackInfo<Value>& args) {
 static void RMDir(const FunctionCallbackInfo<Value>& args) {
   Environment* env = Environment::GetCurrent(args);
 
-  if (args.Length() < 1)
-    return TYPE_ERROR("path required");
+  CHECK_GE(args.Length(), 1);
 
   BufferValue path(env->isolate(), args[0]);
   ASSERT_PATH(path)
