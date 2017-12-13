@@ -184,4 +184,18 @@ fs.stat(__filename, common.mustCall(function(err, s) {
       type: TypeError
     }
   );
+  common.expectsError(
+    () => fs.stat(i, common.mustNotCall()),
+    {
+      code: 'ERR_INVALID_ARG_TYPE',
+      type: TypeError
+    }
+  );
+  common.expectsError(
+    () => fs.statSync(i),
+    {
+      code: 'ERR_INVALID_ARG_TYPE',
+      type: TypeError
+    }
+  );
 });
