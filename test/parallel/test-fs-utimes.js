@@ -206,3 +206,20 @@ if (common.isWindows) {
   const overflow_stats = fs.statSync(path);
   assert.strictEqual(overflow_mtime, overflow_stats.mtime.getTime());
 }
+
+[false, 0, {}, [], null, undefined].forEach((i) => {
+  common.expectsError(
+    () => fs.utimes(i, new Date(), new Date(), common.mustNotCall()),
+    {
+      code: 'ERR_INVALID_ARG_TYPE',
+      type: TypeError
+    }
+  );
+  common.expectsError(
+    () => fs.utimesSync(i, new Date(), new Date()),
+    {
+      code: 'ERR_INVALID_ARG_TYPE',
+      type: TypeError
+    }
+  );
+});

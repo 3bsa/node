@@ -1244,17 +1244,9 @@ static void FChown(const FunctionCallbackInfo<Value>& args) {
 static void UTimes(const FunctionCallbackInfo<Value>& args) {
   Environment* env = Environment::GetCurrent(args);
 
-  int len = args.Length();
-  if (len < 1)
-    return TYPE_ERROR("path required");
-  if (len < 2)
-    return TYPE_ERROR("atime required");
-  if (len < 3)
-    return TYPE_ERROR("mtime required");
-  if (!args[1]->IsNumber())
-    return TYPE_ERROR("atime must be a number");
-  if (!args[2]->IsNumber())
-    return TYPE_ERROR("mtime must be a number");
+  CHECK_GE(args.Length(), 3);
+  CHECK(args[1]->IsNumber());
+  CHECK(args[2]->IsNumber());
 
   BufferValue path(env->isolate(), args[0]);
   ASSERT_PATH(path)
