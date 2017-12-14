@@ -95,6 +95,7 @@ using v8::Object;
 using v8::String;
 using v8::Value;
 
+<<<<<<< HEAD
 #define TYPE_ERROR(msg) env->ThrowTypeError(msg)
 
 #define GET_OFFSET(a) ((a)->IsNumber() ? (a)->IntegerValue() : -1)
@@ -102,6 +103,67 @@ using v8::Value;
 #define ASSERT_PATH(path)                                                   \
   if (*path == nullptr)                                                     \
     return TYPE_ERROR( #path " must be a string or Buffer");
+=======
+#ifndef MIN
+# define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+#define GET_OFFSET(a) ((a)->IsNumber() ? (a)->IntegerValue() : -1)
+
+class FSReqWrap: public ReqWrap<uv_fs_t> {
+ public:
+  enum Ownership { COPY, MOVE };
+
+  inline static FSReqWrap* New(Environment* env,
+                               Local<Object> req,
+                               const char* syscall,
+                               const char* data = nullptr,
+                               enum encoding encoding = UTF8,
+                               Ownership ownership = COPY);
+
+  inline void Dispose();
+
+  void ReleaseEarly() {
+    if (data_ != inline_data()) {
+      delete[] data_;
+      data_ = nullptr;
+    }
+  }
+
+  const char* syscall() const { return syscall_; }
+  const char* data() const { return data_; }
+  const enum encoding encoding_;
+
+  size_t self_size() const override { return sizeof(*this); }
+
+ private:
+  FSReqWrap(Environment* env,
+            Local<Object> req,
+            const char* syscall,
+            const char* data,
+            enum encoding encoding)
+      : ReqWrap(env, req, AsyncWrap::PROVIDER_FSREQWRAP),
+        encoding_(encoding),
+        syscall_(syscall),
+        data_(data) {
+    Wrap(object(), this);
+  }
+
+  ~FSReqWrap() {
+    ReleaseEarly();
+    ClearWrap(object());
+  }
+
+  void* operator new(size_t size) = delete;
+  void* operator new(size_t size, char* storage) { return storage; }
+  char* inline_data() { return reinterpret_cast<char*>(this + 1); }
+
+  const char* syscall_;
+  const char* data_;
+
+  DISALLOW_COPY_AND_ASSIGN(FSReqWrap);
+};
+>>>>>>> fs: remove now unnecessary macros
 
 FSReqWrap* FSReqWrap::New(Environment* env,
                           Local<Object> req,
@@ -524,7 +586,7 @@ static void Stat(const FunctionCallbackInfo<Value>& args) {
   CHECK_GE(args.Length(), 1);
 
   BufferValue path(env->isolate(), args[0]);
-  ASSERT_PATH(path)
+  CHECK_NE(*path, nullptr);
 
   if (args[1]->IsObject()) {
     ASYNC_CALL(AfterStat, stat, args[1], UTF8, *path)
@@ -541,7 +603,7 @@ static void LStat(const FunctionCallbackInfo<Value>& args) {
   CHECK_GE(args.Length(), 1);
 
   BufferValue path(env->isolate(), args[0]);
-  ASSERT_PATH(path)
+  CHECK_NE(*path, nullptr);
 
   if (args[1]->IsObject()) {
     ASYNC_CALL(AfterStat, lstat, args[1], UTF8, *path)
@@ -574,9 +636,9 @@ static void Symlink(const FunctionCallbackInfo<Value>& args) {
   CHECK_GE(args.Length(), 2);
 
   BufferValue target(env->isolate(), args[0]);
-  ASSERT_PATH(target)
+  CHECK_NE(*target, nullptr);
   BufferValue path(env->isolate(), args[1]);
-  ASSERT_PATH(path)
+  CHECK_NE(*path, nullptr);
 
   int flags = 0;
 
@@ -605,10 +667,10 @@ static void Link(const FunctionCallbackInfo<Value>& args) {
   CHECK_GE(args.Length(), 2);
 
   BufferValue src(env->isolate(), args[0]);
-  ASSERT_PATH(src)
+  CHECK_NE(*src, nullptr);
 
   BufferValue dest(env->isolate(), args[1]);
-  ASSERT_PATH(dest)
+  CHECK_NE(*dest, nullptr);
 
   if (args[2]->IsObject()) {
     ASYNC_DEST_CALL(AfterNoArgs, link, args[2], *dest, UTF8, *src, *dest)
@@ -625,7 +687,7 @@ static void ReadLink(const FunctionCallbackInfo<Value>& args) {
   CHECK_GE(argc, 1);
 
   BufferValue path(env->isolate(), args[0]);
-  ASSERT_PATH(path)
+  CHECK_NE(*path, nullptr);
 
   const enum encoding encoding = ParseEncoding(env->isolate(), args[1], UTF8);
 
@@ -658,9 +720,9 @@ static void Rename(const FunctionCallbackInfo<Value>& args) {
   CHECK_GE(args.Length(), 2);
 
   BufferValue old_path(env->isolate(), args[0]);
-  ASSERT_PATH(old_path)
+  CHECK_NE(*old_path, nullptr);
   BufferValue new_path(env->isolate(), args[1]);
-  ASSERT_PATH(new_path)
+  CHECK_NE(*new_path, nullptr);
 
   if (args[2]->IsObject()) {
     ASYNC_DEST_CALL(AfterNoArgs, rename, args[2], *new_path,
@@ -720,7 +782,7 @@ static void Unlink(const FunctionCallbackInfo<Value>& args) {
   CHECK_GE(args.Length(), 1);
 
   BufferValue path(env->isolate(), args[0]);
-  ASSERT_PATH(path)
+  CHECK_NE(*path, nullptr);
 
   if (args[1]->IsObject()) {
     ASYNC_CALL(AfterNoArgs, unlink, args[1], UTF8, *path)
@@ -735,7 +797,7 @@ static void RMDir(const FunctionCallbackInfo<Value>& args) {
   CHECK_GE(args.Length(), 1);
 
   BufferValue path(env->isolate(), args[0]);
-  ASSERT_PATH(path)
+  CHECK_NE(*path, nullptr);
 
   if (args[1]->IsObject()) {
     ASYNC_CALL(AfterNoArgs, rmdir, args[1], UTF8, *path)
@@ -751,7 +813,7 @@ static void MKDir(const FunctionCallbackInfo<Value>& args) {
   CHECK(args[1]->IsInt32());
 
   BufferValue path(env->isolate(), args[0]);
-  ASSERT_PATH(path)
+  CHECK_NE(*path, nullptr);
 
   int mode = static_cast<int>(args[1]->Int32Value());
 
@@ -766,7 +828,7 @@ static void RealPath(const FunctionCallbackInfo<Value>& args) {
   CHECK_GE(args.Length(), 2);
   Environment* env = Environment::GetCurrent(args);
   BufferValue path(env->isolate(), args[0]);
-  ASSERT_PATH(path)
+  CHECK_NE(*path, nullptr);
 
   const enum encoding encoding = ParseEncoding(env->isolate(), args[1], UTF8);
 
@@ -797,7 +859,7 @@ static void ReadDir(const FunctionCallbackInfo<Value>& args) {
   CHECK_GE(args.Length(), 1);
 
   BufferValue path(env->isolate(), args[0]);
-  ASSERT_PATH(path)
+  CHECK_NE(*path, nullptr);
 
   const enum encoding encoding = ParseEncoding(env->isolate(), args[1], UTF8);
 
@@ -861,7 +923,7 @@ static void Open(const FunctionCallbackInfo<Value>& args) {
   CHECK(args[2]->IsInt32());
 
   BufferValue path(env->isolate(), args[0]);
-  ASSERT_PATH(path)
+  CHECK_NE(*path, nullptr);
 
   int flags = args[1]->Int32Value();
   int mode = static_cast<int>(args[2]->Int32Value());
@@ -882,9 +944,9 @@ static void CopyFile(const FunctionCallbackInfo<Value>& args) {
   CHECK(args[2]->IsInt32());
 
   BufferValue src(env->isolate(), args[0]);
-  ASSERT_PATH(src)
+  CHECK_NE(*src, nullptr);
   BufferValue dest(env->isolate(), args[1]);
-  ASSERT_PATH(dest)
+  CHECK_NE(*dest, nullptr);
   int flags = args[2]->Int32Value();
 
   if (args[3]->IsObject()) {
@@ -1121,7 +1183,7 @@ static void Chmod(const FunctionCallbackInfo<Value>& args) {
   CHECK(args[1]->IsInt32());
 
   BufferValue path(env->isolate(), args[0]);
-  ASSERT_PATH(path)
+  CHECK_NE(*path, nullptr);
 
   int mode = static_cast<int>(args[1]->Int32Value());
 
@@ -1165,7 +1227,7 @@ static void Chown(const FunctionCallbackInfo<Value>& args) {
   CHECK(args[2]->IsUint32());
 
   BufferValue path(env->isolate(), args[0]);
-  ASSERT_PATH(path)
+  CHECK_NE(*path, nullptr);
 
   uv_uid_t uid = static_cast<uv_uid_t>(args[1]->Uint32Value());
   uv_gid_t gid = static_cast<uv_gid_t>(args[2]->Uint32Value());
@@ -1208,7 +1270,7 @@ static void UTimes(const FunctionCallbackInfo<Value>& args) {
   CHECK(args[2]->IsNumber());
 
   BufferValue path(env->isolate(), args[0]);
-  ASSERT_PATH(path)
+  CHECK_NE(*path, nullptr);
 
   const double atime = static_cast<double>(args[1]->NumberValue());
   const double mtime = static_cast<double>(args[2]->NumberValue());
