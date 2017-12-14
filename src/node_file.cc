@@ -970,9 +970,7 @@ static void CopyFile(const FunctionCallbackInfo<Value>& args) {
 static void WriteBuffer(const FunctionCallbackInfo<Value>& args) {
   Environment* env = Environment::GetCurrent(args);
 
-  if (!args[0]->IsInt32())
-    return env->ThrowTypeError("First argument must be file descriptor");
-
+  CHECK(args[0]->IsInt32());
   CHECK(Buffer::HasInstance(args[1]));
 
   int fd = args[0]->Int32Value();
@@ -984,14 +982,10 @@ static void WriteBuffer(const FunctionCallbackInfo<Value>& args) {
   int64_t pos = GET_OFFSET(args[4]);
   Local<Value> req = args[5];
 
-  if (off > buffer_length)
-    return env->ThrowRangeError("offset out of bounds");
-  if (len > buffer_length)
-    return env->ThrowRangeError("length out of bounds");
-  if (off + len < off)
-    return env->ThrowRangeError("off + len overflow");
-  if (!Buffer::IsWithinBounds(off, len, buffer_length))
-    return env->ThrowRangeError("off + len > buffer.length");
+  CHECK_LE(off, buffer_length);
+  CHECK_LE(len, buffer_length);
+  CHECK_GE(off + len, off);
+  CHECK(Buffer::IsWithinBounds(off, len, buffer_length));
 
   buf += off;
 
@@ -1029,10 +1023,7 @@ static void WriteBuffers(const FunctionCallbackInfo<Value>& args) {
 
   for (uint32_t i = 0; i < iovs.length(); i++) {
     Local<Value> chunk = chunks->Get(i);
-
-    if (!Buffer::HasInstance(chunk))
-      return env->ThrowTypeError("Array elements all need to be buffers");
-
+    CHECK(Buffer::HasInstance(chunk));
     iovs[i] = uv_buf_init(Buffer::Data(chunk), Buffer::Length(chunk));
   }
 
@@ -1057,8 +1048,7 @@ static void WriteBuffers(const FunctionCallbackInfo<Value>& args) {
 static void WriteString(const FunctionCallbackInfo<Value>& args) {
   Environment* env = Environment::GetCurrent(args);
 
-  if (!args[0]->IsInt32())
-    return env->ThrowTypeError("First argument must be file descriptor");
+  CHECK(args[0]->IsInt32());
 
   Local<Value> req;
   Local<Value> string = args[1];
