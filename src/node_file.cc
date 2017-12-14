@@ -633,25 +633,15 @@ static void FStat(const FunctionCallbackInfo<Value>& args) {
 static void Symlink(const FunctionCallbackInfo<Value>& args) {
   Environment* env = Environment::GetCurrent(args);
 
-  CHECK_GE(args.Length(), 2);
+  CHECK_GE(args.Length(), 3);
 
   BufferValue target(env->isolate(), args[0]);
   CHECK_NE(*target, nullptr);
   BufferValue path(env->isolate(), args[1]);
   CHECK_NE(*path, nullptr);
 
-  int flags = 0;
-
-  if (args[2]->IsString()) {
-    node::Utf8Value mode(env->isolate(), args[2]);
-    if (strcmp(*mode, "dir") == 0) {
-      flags |= UV_FS_SYMLINK_DIR;
-    } else if (strcmp(*mode, "junction") == 0) {
-      flags |= UV_FS_SYMLINK_JUNCTION;
-    } else if (strcmp(*mode, "file") != 0) {
-      return env->ThrowError("Unknown symlink type");
-    }
-  }
+  CHECK(args[2]->IsUint32());
+  int flags = args[2]->Uint32Value(env->context()).ToChecked();
 
   if (args[3]->IsObject()) {
     ASYNC_DEST_CALL(AfterNoArgs, symlink, args[3], *path,

@@ -96,6 +96,23 @@ fs.symlink(linkData, linkPath, common.mustCall(function(err) {
   );
 });
 
+common.expectsError(
+  () => fs.symlink('', '', '🍏', common.mustNotCall()),
+  {
+    code: 'ERR_FS_INVALID_SYMLINK_TYPE',
+    type: Error,
+    message: 'Invalid symlink type: 🍏'
+  }
+);
+common.expectsError(
+  () => fs.symlinkSync('', '', '🍏'),
+  {
+    code: 'ERR_FS_INVALID_SYMLINK_TYPE',
+    type: Error,
+    message: 'Invalid symlink type: 🍏'
+  }
+);
+
 process.on('exit', function() {
   assert.notStrictEqual(linkTime, fileTime);
 });
