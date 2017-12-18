@@ -5,6 +5,36 @@ if (!common.hasCrypto)
   common.skip('missing crypto');
 const assert = require('assert');
 const h2 = require('http2');
+const async_hooks = require('async_hooks');
+
+const handles = new Set();
+const counters = { init: 0, destroy: 0, before: 0, after: 0 };
+const hook = async_hooks.createHook({
+  init(id, type) {
+    if (type === 'HTTP2SETTINGS') {
+      counters.init++;
+      handles.add(id);
+    }
+  },
+  destroy(id) {
+    if (handles.has(id))
+      counters.destroy++;
+    handles.delete(id);
+  },
+  before(id) {
+    if (handles.has(id))
+      counters.before++;
+  },
+  after(id) {
+    if (handles.has(id))
+      counters.after++;
+  }
+});
+hook.enable();
+process.on('exit', () => {
+  assert.deepStrictEqual(counters,
+                         { init: 3, destroy: 3, before: 3, after: 3 });
+});
 
 const server = h2.createServer();
 
@@ -77,9 +107,7 @@ server.listen(
     // State will only be valid after connect event is emitted
     req.on('ready', common.mustCall(() => {
       assert.doesNotThrow(() => {
-        client.settings({
-          maxHeaderListSize: 1
-        });
+        client.settings({ maxHeaderListSize: 1 }, common.mustCall());
       });
 
       // Verify valid error ranges
