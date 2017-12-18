@@ -101,7 +101,8 @@ common.expectsError(
   {
     code: 'ERR_FS_INVALID_SYMLINK_TYPE',
     type: Error,
-    message: 'Invalid symlink type: 🍏'
+    message:
+      'Symlink type must be one of "dir", "file", or "junction". Received "🍏"'
   }
 );
 common.expectsError(
@@ -109,7 +110,8 @@ common.expectsError(
   {
     code: 'ERR_FS_INVALID_SYMLINK_TYPE',
     type: Error,
-    message: 'Invalid symlink type: 🍏'
+    message:
+      'Symlink type must be one of "dir", "file", or "junction". Received "🍏"'
   }
 );
 
