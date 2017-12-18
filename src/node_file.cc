@@ -95,75 +95,11 @@ using v8::Object;
 using v8::String;
 using v8::Value;
 
-<<<<<<< HEAD
-#define TYPE_ERROR(msg) env->ThrowTypeError(msg)
-
-#define GET_OFFSET(a) ((a)->IsNumber() ? (a)->IntegerValue() : -1)
-
-#define ASSERT_PATH(path)                                                   \
-  if (*path == nullptr)                                                     \
-    return TYPE_ERROR( #path " must be a string or Buffer");
-=======
 #ifndef MIN
 # define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
 #define GET_OFFSET(a) ((a)->IsNumber() ? (a)->IntegerValue() : -1)
-
-class FSReqWrap: public ReqWrap<uv_fs_t> {
- public:
-  enum Ownership { COPY, MOVE };
-
-  inline static FSReqWrap* New(Environment* env,
-                               Local<Object> req,
-                               const char* syscall,
-                               const char* data = nullptr,
-                               enum encoding encoding = UTF8,
-                               Ownership ownership = COPY);
-
-  inline void Dispose();
-
-  void ReleaseEarly() {
-    if (data_ != inline_data()) {
-      delete[] data_;
-      data_ = nullptr;
-    }
-  }
-
-  const char* syscall() const { return syscall_; }
-  const char* data() const { return data_; }
-  const enum encoding encoding_;
-
-  size_t self_size() const override { return sizeof(*this); }
-
- private:
-  FSReqWrap(Environment* env,
-            Local<Object> req,
-            const char* syscall,
-            const char* data,
-            enum encoding encoding)
-      : ReqWrap(env, req, AsyncWrap::PROVIDER_FSREQWRAP),
-        encoding_(encoding),
-        syscall_(syscall),
-        data_(data) {
-    Wrap(object(), this);
-  }
-
-  ~FSReqWrap() {
-    ReleaseEarly();
-    ClearWrap(object());
-  }
-
-  void* operator new(size_t size) = delete;
-  void* operator new(size_t size, char* storage) { return storage; }
-  char* inline_data() { return reinterpret_cast<char*>(this + 1); }
-
-  const char* syscall_;
-  const char* data_;
-
-  DISALLOW_COPY_AND_ASSIGN(FSReqWrap);
-};
->>>>>>> fs: remove now unnecessary macros
 
 FSReqWrap* FSReqWrap::New(Environment* env,
                           Local<Object> req,
