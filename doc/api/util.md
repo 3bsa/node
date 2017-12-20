@@ -250,6 +250,11 @@ without any formatting.
 util.format('%% %s'); // '%% %s'
 ```
 
+*Note*: `util.format()` is a synchronous method that is intended strictly as
+a debugging tool that has not been performance optimized. Using `util.format()`
+in production code is not recommended because of the potential performance
+bottlenecks it can introduce.
+
 ## util.inherits(constructor, superConstructor)
 <!-- YAML
 added: v0.3.0
@@ -395,6 +400,11 @@ console.log(util.inspect(util, { showHidden: true, depth: null }));
 Values may supply their own custom `inspect(depth, opts)` functions, when
 called these receive the current `depth` in the recursive inspection, as well as
 the options object passed to `util.inspect()`.
+
+*Note*: `util.inspect()` is a synchronous method that is intended strictly as
+a debugging tool that has not been performance optimized. Using `util.inspect()`
+in production code is not recommended because of the potential performance
+bottlenecks it can introduce.
 
 ### Customizing `util.inspect` colors
 
