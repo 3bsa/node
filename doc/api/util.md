@@ -250,10 +250,10 @@ without any formatting.
 util.format('%% %s'); // '%% %s'
 ```
 
-It is immportant to note that `util.format()` is a synchronous method that is
-intended strictly as a debugging tool that has not been performance optimized.
-Using `util.format()` in production code is not recommended because of the
-potential performance bottlenecks it can introduce.
+Please note that `util.format()` is a synchronous method that is mainly
+intended as a debugging tool. Some input values can have a significant
+performance overhead that can block the event loop. Use this function
+with care and never in a hot code path.
 
 ## util.inherits(constructor, superConstructor)
 <!-- YAML
@@ -401,10 +401,10 @@ Values may supply their own custom `inspect(depth, opts)` functions, when
 called these receive the current `depth` in the recursive inspection, as well as
 the options object passed to `util.inspect()`.
 
-It is immportant to note that `util.inspect()` is a synchronous method that is
-intended strictly as a debugging tool that has not been performance optimized.
-Using `util.inspect()` in production code is not recommended because of the
-potential performance bottlenecks it can introduce.
+Please note that `util.inspect()` is a synchronous method that is mainly
+intended as a debugging tool. Some input values can have a significant
+performance overhead that can block the event loop. Use this function
+with care and never in a hot code path.
 
 ### Customizing `util.inspect` colors
 
